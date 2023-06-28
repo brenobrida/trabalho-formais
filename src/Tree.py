@@ -2,55 +2,48 @@ from Node import Node
 
 class Tree:
   """
-  Uma classe usada para representar árvores de derivação
-
-  Attributes
-  ----------
-  root: Node object
+  Classe utilizada para representar árvores de derivação
+  Atribs:
     nó raiz, da árvore
-  last: Node object
     último nó adicionado
-  dict: dict
     dicionário de nós folhas
   """
 
   def __init__(self):
-    self.root = None
-    self.last = None
+    self.raiz = None
+    self.ultimo = None
     self.dict = dict()
 
-  def printTree(self):
-    """Imprime, na tela, toda a árvore"""
+  """Imprime em tela toda a árvore"""
+  def imprimirArvore(self):
 
-    self.root.print()
+    self.raiz.print()
 
+  """Calcula a função FollowPos da árvore"""
   def followPos(self):
-    """Calcula a função FollowPos da árvore"""
 
-    def iterate(node):
-      """
+
+    """
       Retorna uma lista com os nós pertencentes à uma subárvore
-      
-      Parameters
-      ----------
-      node: Node object
+      Parametro:
         nó raiz da subárvore
-      """
+    """
+    def iterarSubarvore(node):
 
       aux = [node]
-      if node.l_child:
-        aux += iterate(node.l_child)
-      if node.m_child:
-        aux += iterate(node.m_child)
-      if node.r_child:
-        aux += iterate(node.r_child)
+      if node.left_child:
+        aux += iterarSubarvore(node.left_child)
+      if node.mid_child:
+        aux += iterarSubarvore(node.mid_child)
+      if node.right_child:
+        aux += iterarSubarvore(node.right_child)
       return aux
 
-    nodes = iterate(self.root)
+    nodes = iterarSubarvore(self.raiz)
     
     count = 1
     for node in nodes:
-      if node.isLeaf():
+      if node.ehFolha():
         node.index = count
         self.dict[count] = node.data_value
         count += 1
@@ -61,62 +54,60 @@ class Tree:
         for lp in node.lastPos():
           follow_pos[lp.index] = follow_pos.get(lp.index, []) + [fp.index for fp in node.firstPos()]
       elif node.data_value == '.':
-        for lp in node.l_child.lastPos():
-          follow_pos[lp.index] = follow_pos.get(lp.index, []) + [fp.index for fp in node.r_child.firstPos()]
-      elif node.isLeaf():
+        for lp in node.left_child.lastPos():
+          follow_pos[lp.index] = follow_pos.get(lp.index, []) + [fp.index for fp in node.right_child.firstPos()]
+      elif node.ehFolha():
         follow_pos[node.index] = follow_pos.get(node.index, []) + []
     
     return follow_pos
 
-  def insert(self, data):
-    """
-    Insere, na árvore, um novo nodo
-    
-    Parameters
-    ----------
-    data: str
+
+  """
+    Insere um novo nodo na árvore
+    Parametro:
       dado a ser inserido
-    """
+  """
+  def inserir(self, data):
 
     # Verifica se o novo dado a ser inserido é uma subárvore
     if isinstance(data, Tree):
-      new_node = data.root
+      new_node = data.raiz
     else:
       new_node = Node(data)
 
     # Caso a árvore esteja vazia, insere o dado na raiz
-    if not self.root:
-      self.root = new_node
-      self.last = self.root
+    if not self.raiz:
+      self.raiz = new_node
+      self.ultimo = self.raiz
       return
 
     # Caso a raiz seja * e nenhum outro nodo tenha sido adicionado, insere o dado no filho do meio
-    if self.root.data_value == '*' and self.root.isLeaf():
-      new_node.parent = self.last
-      self.last.m_child = new_node
-      self.last = new_node
+    if self.raiz.data_value == '*' and self.raiz.ehFolha():
+      new_node.parent_node = self.ultimo
+      self.ultimo.mid_child = new_node
+      self.ultimo = new_node
       return
 
     # Caso o último nodo inserido seja um operador e o novo dado a ser adicionado seja um terminal ou uma subárvore, o insere na esquerda
-    if self.last.isOperator() and (not new_node.isOperator() or isinstance(data, Tree)):
-      new_node.parent = self.last
-      self.last.l_child = new_node
-      self.last = new_node
+    if self.ultimo.ehOperador() and (not new_node.ehOperador() or isinstance(data, Tree)):
+      new_node.parent_node = self.ultimo
+      self.ultimo.left_child = new_node
+      self.ultimo = new_node
       return
     
     # Caso o último dado inserido seja um terminal ou uma subárvore e o novo nodo seja um operador, realiza o balanceamento e insere
-    if (not self.last.isOperator() or (self.last.l_child or self.last.m_child)) and new_node.isOperator():
-      if self.last.parent:
-        new_node.parent = self.last.parent
-        if self.last.parent.l_child:
-          self.last.parent.l_child = new_node
+    if (not self.ultimo.ehOperador() or (self.ultimo.left_child or self.ultimo.mid_child)) and new_node.ehOperador():
+      if self.ultimo.parent_node:
+        new_node.parent_node = self.ultimo.parent_node
+        if self.ultimo.parent_node.left_child:
+          self.ultimo.parent_node.left_child = new_node
         else:
-          self.last.parent.m_child = new_node
-        self.last.parent = new_node
+          self.ultimo.parent_node.mid_child = new_node
+        self.ultimo.parent_node = new_node
       else:
-        self.root = new_node
-      new_node.r_child = self.last
-      self.last = new_node
+        self.raiz = new_node
+      new_node.right_child = self.ultimo
+      self.ultimo = new_node
       return
 
     raise Exception('Expressão inválida!')

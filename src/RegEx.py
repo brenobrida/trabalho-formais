@@ -1,27 +1,15 @@
 from AutomatoFinito import AutomatoFinito
 from Tree import Tree
 
-class ER:
+class RegEx:
   """
-  Uma classe usada para representar expressões regulares
-
-  Attributes
-  ----------
-  expression: str
+  Classe utilisada para representar expressões regulares
+  Atribs:
     expressão regular
-  tree: Tree object
     árvore de derivação
   """
 
   def __init__(self, expression):
-    """
-    Parameters
-    ----------
-    expression: str
-      expressão regular
-    tree: Tree object
-      árvore de derivação
-    """
 
     expression = expression.replace(' ', '').replace('|', '+') + '#'
 
@@ -38,33 +26,29 @@ class ER:
         self.expression += '.'
     self.expression += '#'
 
-    self.tree = self.generateERTree()
+    self.tree = self.gerarRegexTree()
 
-  def generateERTree(self):
     """Gera e retorna a árvore de derivação da expressão regular"""
+  def gerarRegexTree(self):
     
-    def private(start, end):
-      """
-      Insere, na árvore de derivação, um trecho da expressão regular, caractere por caractere
-      
-      Parameters
-      ----------
-      start: int
+    """
+      Insere, na árvore de derivação, um trecho da expressão regular caractere por caractere
+      Param:
         índice inicial da subexpressão
-      end: int
         índice final da subexpressão
-      """
+    """
+    def private(start, end):
 
       tree = Tree()
       index = end
       while index >= start:
         if any(index == x for _, x in indexes if x != end):
           [(x, y)] = [(start, end) for start, end in indexes if end == index]
-          tree.insert(private(x, y))
+          tree.inserir(private(x, y))
           index = x
           pass
         elif self.expression[index] not in ['(', ')']:
-          tree.insert(self.expression[index])
+          tree.inserir(self.expression[index])
         index -= 1
 
       return tree
@@ -87,12 +71,12 @@ class ER:
 
     return private(0, len(self.expression) - 1)
 
+  """Converte a expressão regular para um autômato finito"""
   def toAF(self):
-    """Converte a expressão regular para um autômato finito"""
 
     follow_pos = self.tree.followPos()
     
-    dstates = [sorted([x.index for x in self.tree.root.firstPos()])]
+    dstates = [sorted([x.index for x in self.tree.raiz.firstPos()])]
     visited = []
     dtran = dict()
     while dstates:

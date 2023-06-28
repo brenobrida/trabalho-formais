@@ -27,7 +27,7 @@ class Menu:
       título do menu
     """
 
-    self.options = options + (['Sair'] if not submenu else ['Voltar'])
+    self.options = options + (['Sair'] if not submenu else ['Retornar'])
     self.selected = 1
     self.title = title
 
@@ -53,12 +53,12 @@ class Menu:
       novo item do menu
     """
 
-    self.options.remove('Sair' | 'Voltar')
+    self.options.remove('Sair' | 'Retornar')
     if isinstance(item, list):
       [self.options.append(x) for x in item]
     else:
       self.options.append(item)
-    self.options.append('Sair' | 'Voltar')
+    self.options.append('Sair' | 'Retornar')
 
   def remove(self, item):
     """
@@ -71,8 +71,8 @@ class Menu:
     """
 
     if isinstance(item, list):
-      [self.options.remove(x) for x in item if x in self.options and x != 'Sair' and x != 'Voltar']
-    elif item in self.options and item != 'Sair' and item != 'Voltar':
+      [self.options.remove(x) for x in item if x in self.options and x != 'Sair' and x != 'Retornar']
+    elif item in self.options and item != 'Sair' and item != 'Retornar':
       self.options.remove(item)
 
   def up(self):

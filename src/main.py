@@ -4,54 +4,59 @@ import os
 from AutomatoFinito import AutomatoFinito
 from NonDeterministic import NonDeterministic
 from Deterministic import Deterministic
-from ER import ER
+from RegEx import RegEx
 from Grammar import Grammar
 from Menu import Menu
 
 afs = dict()
 grammars = dict()
 arquivos = {'AFDS': [], 'AFNDS': [], 'Gramáticas': []}
+
+""" opções do menu principal """
 select_menu = Menu(
-  ['Carregar autômato', 
+  ['Importar um autômato', 
    'Ler entrada', 
-   'Converter NonDeterministic > Deterministic', 
-   'Minimizar AutomatoFinito', 
-   'União de AFs', 
-   'Interseção de AFs', 
-   'Converter ER > Deterministic',
-   'Carregar gramática',
+   'Realizar conversão NonDeterministic para Deterministic', 
+   'Minimizar Automato Finito', 
+   'União de Automatos Finitos', 
+   'Interseção de Automatos Finitos', 
+   'Converter RegEx para Deterministic',
+   'Importar gramática',
    'Eliminar recursão à esquerda',
-   'Fatorar gramática',
+   'Fatorar uma gramática',
    'Ler entrada [preditivo LL(1)]',
    'Ler entrada [SLR(1)]'])
 
+""" submenu para automatos finitos"""
 def afsMenu(title='Selecione um autômato:'):
   if not arquivos['AFDS'] and not arquivos['AFNDS']:
-    raise Exception('Nenhum autômato encontrado!')
+    raise Exception('Não foi possível encontrar o autômato!')
 
   select_afs = Menu([y for x in arquivos.values() for y in x], title=title, submenu=True)
   (_, selected) = select_afs.select()
 
-  return (False, False) if selected == 'Voltar' else (NonDeterministic(afs[selected]) if afs[selected].isNonDeterministic() else Deterministic(afs[selected]), selected)
+  return (False, False) if selected == 'Retornar' else (NonDeterministic(afs[selected]) if afs[selected].isNonDeterministic() else Deterministic(afs[selected]), selected)
 
-def grammarsMenu(title='Selecione uma gramática:'):
+""" submenu para gramaticas"""
+def menuGramaticas(title='Selecione uma gramática:'):
   if not arquivos['Gramáticas']:
     raise Exception('Nenhuma gramática encontrado!')
 
   select_grammars = Menu(arquivos['Gramáticas'], title=title, submenu=True)
   (_, selected) = select_grammars.select()
 
-  return (False, False) if selected == 'Voltar' else (grammars[selected], selected)
+  return (False, False) if selected == 'Retornar' else (grammars[selected], selected)
 
-def optionsMenu(AutomatoFinito, title=''):
+""" submenu de opcoes de arquivo para AF"""
+def menuOpcoes(AutomatoFinito, title=''):
   options_menu = Menu(['Salvar como arquivo', 'Salvar como tabela de transições', 'Carregar'], title=title + ':\n\n' + AutomatoFinito.tableAutomata(), submenu=True)
   (n, selected) = options_menu.select()
 
-  if selected == 'Voltar':
+  if selected == 'Retornar':
     return
   elif n == 3:
     arquivo = input(f'Nome do autômato [default={title}]: ') or title
-    updateArquivos(AutomatoFinito, arquivo)
+    atualizarArquivos(AutomatoFinito, arquivo)
     return
   elif n == 1:
     AutomatoFinito.saveFile(input('\nNome do arquivo: '))
@@ -60,23 +65,24 @@ def optionsMenu(AutomatoFinito, title=''):
     AutomatoFinito.printFile(input('\nNome do arquivo: '))
     print ('\n\033[92mArquivo salvo com sucesso!\033[0m')
   time.sleep(1)
-
-def grammarOptionsMenu(grammar, title=''):
+  
+""" submenu de opcoes de arquivo para Gramaticas"""
+def menuOpcoesGramaticas(grammar, title=''):
   options_menu = Menu(['Salvar como arquivo', 'Carregar'], title=title + ':\n\n' + grammar.toStr(), submenu=True)
   (n, selected) = options_menu.select()
 
-  if selected == 'Voltar':
+  if selected == 'Retornar':
     return
   elif n == 2:
     arquivo = input(f'Nome do autômato [default={title}]: ') or title
-    updateArquivos(grammar, arquivo)
+    atualizarArquivos(grammar, arquivo)
     return
   elif n == 1:
     grammar.saveFile(input('\nNome do arquivo: '))
     print ('\n\033[92mArquivo salvo com sucesso!\033[0m')
   time.sleep(1)
 
-def updateArquivos(object, object_name):
+def atualizarArquivos(object, object_name):
   if isinstance(object, AutomatoFinito):
     if object_name not in afs:
       arquivos['AFNDS'].append(object_name) if object.isNonDeterministic() else arquivos['AFDS'].append(object_name)
@@ -100,13 +106,13 @@ def updateArquivos(object, object_name):
     out += '\n'.join(arquivos['Gramáticas'])
   select_menu.refreshTitle(out)
 
-def op1():
+def opcao1():
   arquivo = input('\nCaminho do arquivo: ')
   automato = AutomatoFinito.readFile(arquivo)
 
-  updateArquivos(automato, arquivo)
+  atualizarArquivos(automato, arquivo)
 
-def op2():
+def opcao2():
   (AutomatoFinito, _) = afsMenu()
 
   if AutomatoFinito:
@@ -115,26 +121,26 @@ def op2():
     print ('\n\033[92mEntrada válida!\033[0m' if AutomatoFinito.readEntry(read) else '\n\033[91mEntrada inválida!\033[0m')
     time.sleep(1)
 
-def op3():
+def opcao3():
   if not arquivos['AFNDS']:
     raise Exception('Nenhum autômato finito não-determinístico encontrado!')
 
   select_afs = Menu(arquivos['AFNDS'], submenu=True)
   (_, selected) = select_afs.select()
 
-  if selected != 'Voltar':
+  if selected != 'Retornar':
     AutomatoFinito = NonDeterministic(afs[selected]).toDeterministic()
-    optionsMenu(AutomatoFinito=AutomatoFinito, title=f'AFNDtoAFD({selected})')
+    menuOpcoes(AutomatoFinito=AutomatoFinito, title=f'AFNDtoAFD({selected})')
 
-def op4():
+def opcao4():
   (AutomatoFinito, selected) = afsMenu()
 
   if AutomatoFinito:
     AutomatoFinito = AutomatoFinito.minimize(AutomatoFinito)
 
-    optionsMenu(AutomatoFinito=AutomatoFinito, title=f'AutomatoFinito Mínimo({selected})')
+    menuOpcoes(AutomatoFinito=AutomatoFinito, title=f'AutomatoFinito Mínimo({selected})')
 
-def op5():
+def opcao5():
   (af1, selected1) = afsMenu()
 
   if af1:
@@ -142,9 +148,9 @@ def op5():
 
     if af2:
       AutomatoFinito = AutomatoFinito.union(af1, af2)
-      optionsMenu(AutomatoFinito=AutomatoFinito, title=f'União({selected1}, {selected2})')
+      menuOpcoes(AutomatoFinito=AutomatoFinito, title=f'União({selected1}, {selected2})')
 
-def op6():
+def opcao6():
   (af1, selected1) = afsMenu()
 
   if af1:
@@ -152,37 +158,37 @@ def op6():
 
     if af2:
       AutomatoFinito = AutomatoFinito.intersection(af1, af2)
-      optionsMenu(AutomatoFinito=AutomatoFinito, title=f'Interseção({selected1}, {selected2})')
+      menuOpcoes(AutomatoFinito=AutomatoFinito, title=f'Interseção({selected1}, {selected2})')
 
-def op7():
+def opcao7():
   os.system('cls||clear')
   read = input('Expressão regular: ')
 
-  AutomatoFinito = ER(read).toAF()
-  optionsMenu(AutomatoFinito=AutomatoFinito, title=f'ERtoAF({read})')
+  AutomatoFinito = RegEx(read).toAF()
+  menuOpcoes(AutomatoFinito=AutomatoFinito, title=f'RegExtoAF({read})')
 
-def op8():
+def opcao8():
   arquivo = input('\nCaminho do arquivo: ')
   grammar = Grammar.readFile(arquivo)
 
-  updateArquivos(grammar, arquivo)
+  atualizarArquivos(grammar, arquivo)
 
-def op9():
-  (grammar, selected) = grammarsMenu()
+def opcao9():
+  (grammar, selected) = menuGramaticas()
 
   if grammar:
     grammar = Grammar.eliminateLeftRecursion(grammar)
-    grammarOptionsMenu(grammar=grammar, title=f'NonRecursive({selected})')
+    menuOpcoesGramaticas(grammar=grammar, title=f'NonRecursive({selected})')
 
-def op10():
-  (grammar, selected) = grammarsMenu()
+def opcao10():
+  (grammar, selected) = menuGramaticas()
 
   if grammar:
     grammar = Grammar.factorate(grammar)
-    grammarOptionsMenu(grammar=grammar, title=f'Factorate({selected})')
+    menuOpcoesGramaticas(grammar=grammar, title=f'Factorate({selected})')
 
-def op11():
-  (grammar, _) = grammarsMenu()
+def opcao11():
+  (grammar, _) = menuGramaticas()
 
   if grammar:
     read = input('\nEntrada: ')
@@ -190,8 +196,8 @@ def op11():
     print ('\n\033[92mEntrada válida!\033[0m' if grammar.readInputLL(read) else '\n\033[91mEntrada inválida!\033[0m')
     time.sleep(1)
 
-def op12():
-  (grammar, _) = grammarsMenu()
+def opcao12():
+  (grammar, _) = menuGramaticas()
 
   if grammar:
     read = input('\nEntrada: ')
@@ -204,29 +210,29 @@ while True:
 
   try:
     if op == 1:
-      op1()
+      opcao1()
     elif op == 2:
-      op2()
+      opcao2()
     elif op == 3:
-      op3()
+      opcao3()
     elif op == 4:
-      op4()
+      opcao4()
     elif op == 5:
-      op5()
+      opcao5()
     elif op == 6:
-      op6()
+      opcao6()
     elif op == 7:
-      op7()
+      opcao7()
     elif op == 8:
-      op8()
+      opcao8()
     elif op == 9:
-      op9()
+      opcao9()
     elif op == 10:
-      op10()
+      opcao10()
     elif op == 11:
-      op11()
+      opcao11()
     elif op == 12:
-      op12()
+      opcao12()
     elif op == 13:
       break
   except Exception as e:
