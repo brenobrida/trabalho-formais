@@ -1,3 +1,7 @@
+# *Membros*
+Arthur Gums Willrich - 18204648 <br />
+Breno De Brida - 18204020 <br />
+Wesley Mayk Gama Luz - 15100769
 # **Sistema Manipulador de Linguagens Formais**
 
 Sistema manipulador de linguagens regulares e livres de contexto, desenvolvido em Python.
