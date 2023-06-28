@@ -99,7 +99,7 @@ class Grammar:
 
             return sorted(set(first))
 
-        if Grammar.eliminateLeftRecursion(self).productions.keys() != self.productions.keys():
+        if Grammar.removeLeftRecursion(self).productions.keys() != self.productions.keys():
             raise Exception('A gramática não pode ser recursiva à esquerda!')
 
         self.firsts = dict()
@@ -158,7 +158,7 @@ class Grammar:
         Gera a tabela de análise preditivo LL(1).
         """
 
-        grammar = Grammar.eliminateLeftRecursion(Grammar.factorate(self))
+        grammar = Grammar.removeLeftRecursion(Grammar.factorate(self))
         grammar.generateFollowSet()
 
         for nterminal in grammar.nterminals:
@@ -272,7 +272,7 @@ class Grammar:
         new_productions.update(self.productions)
 
         grammar = Grammar(new_productions)
-        grammar = Grammar.eliminateLeftRecursion(Grammar(new_productions))
+        grammar = Grammar.removeLeftRecursion(Grammar(new_productions))
         grammar.generateFollowSet()
 
         lrSet = [grammar.closure(
@@ -387,7 +387,7 @@ class Grammar:
         grammar (Grammar object): A instância de uma gramática.
         """
 
-        def eliminateDirect(productions):
+        def removeDirect(productions):
             """
             Remove a ambiguidade direta em produções.
 
@@ -409,7 +409,7 @@ class Grammar:
                     newProductions[(nt,)] = newProductions.get((nt,), []) + items
             return newProductions
 
-        def eliminateIndirect(productionList, visitedNonTerminals):
+        def removeIndirect(productionList, visitedNonTerminals):
             """
             Deriva produções indiretas em produções diretas.
 
@@ -428,7 +428,7 @@ class Grammar:
 
                 if ambiguousProductions:
                     ambiguousProductions = [([] if y == ['&'] and x[1:] else y) + x[1:] for x in ambiguousProductions for y in old_productions[(x[0],)]]
-                    return eliminateIndirect(ambiguousProductions + nonAmbiguousProductions, visitedNonTerminals)
+                    return removeIndirect(ambiguousProductions + nonAmbiguousProductions, visitedNonTerminals)
                 else:
                     break
             return nonAmbiguousProductions
@@ -442,7 +442,7 @@ class Grammar:
         while True:
             new_productions = dict()
             for ((nt,), productions) in old_productions.items():
-                new_productions.update(eliminateDirect(productions))
+                new_productions.update(removeDirect(productions))
 
             counter += 1
             if counter >= limit:
@@ -456,7 +456,7 @@ class Grammar:
         while True:
             new_productions = dict()
             for ((nt,), productions) in old_productions.items():
-                indirect = eliminateDirect(eliminateIndirect(productions, [nt]))
+                indirect = removeDirect(removeIndirect(productions, [nt]))
                 if len(indirect.keys()) > 1:
                     new_productions.update(indirect)
                 else:
@@ -474,7 +474,7 @@ class Grammar:
         return Grammar(new_productions)
 
     @staticmethod
-    def eliminateLeftRecursion(grammar):
+    def removeLeftRecursion(grammar):
         """
         Remove a recursão à esquerda em produções da gramática.
 
@@ -483,7 +483,7 @@ class Grammar:
         grammar (Grammar object): A instância de uma gramática.
         """
 
-        def eliminateDirectLeftRecursion(productions_list):
+        def removeDirectLeftRecursion(productions_list):
             """
             Remove a recursão direta em produções.
 
@@ -508,7 +508,7 @@ class Grammar:
 
             return new_productions
 
-        def eliminateRecursion(productions, limit=100, counter=0):
+        def removeRecursion(productions, limit=100, counter=0):
             """
             Deriva recursões indiretas em recursões diretas.
 
@@ -531,7 +531,7 @@ class Grammar:
                 if productions_with_recursion:
                     productions_with_recursion = [(y if y != ['&'] else []) + x[1:] for x in productions_with_recursion
                                                   for y in new_productions[(x[0],)]]
-                    return eliminateRecursion(productions_with_recursion + productions_without_recursion, limit,
+                    return removeRecursion(productions_with_recursion + productions_without_recursion, limit,
                                               counter + 1)
                 else:
                     break
@@ -544,7 +544,7 @@ class Grammar:
         visited = []
         new_productions = dict()
         for ((nt,), productions) in grammar.productions.items():
-            new_productions.update(eliminateDirectLeftRecursion(eliminateRecursion(productions)))
+            new_productions.update(removeDirectLeftRecursion(removeRecursion(productions)))
             visited.append(nt)
 
         return Grammar(new_productions)

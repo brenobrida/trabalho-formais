@@ -22,7 +22,7 @@ select_menu = Menu(
    'Interseção de Automatos Finitos', 
    'Converter RegEx para Deterministic',
    'Importar gramática',
-   'Eliminar recursão à esquerda',
+   'Remover recursão à esquerda',
    'Fatorar uma gramática',
    'Ler entrada [preditivo LL(1)]',
    'Ler entrada [SLR(1)]'])
@@ -177,7 +177,7 @@ def opcao9():
   (grammar, selected) = menuGramaticas()
 
   if grammar:
-    grammar = Grammar.eliminateLeftRecursion(grammar)
+    grammar = Grammar.removeLeftRecursion(grammar)
     menuOpcoesGramaticas(grammar=grammar, title=f'NonRecursive({selected})')
 
 def opcao10():
