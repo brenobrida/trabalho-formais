@@ -1,6 +1,5 @@
 from AutomatoFinito import AutomatoFinito
 
-
 class Deterministic(AutomatoFinito):
     # Uma classe usada para representar autômatos finitos determinísticos
 

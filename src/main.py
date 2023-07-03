@@ -205,8 +205,9 @@ def opcao12():
     print ('\n\033[92mEntrada válida!\033[0m' if grammar.readInputSLR(read) else '\n\033[91mEntrada inválida!\033[0m')
     time.sleep(1)
 
+
 while True:
-  (op, _) = select_menu.select()
+  op, _ = select_menu.select()
 
   try:
     if op == 1:
